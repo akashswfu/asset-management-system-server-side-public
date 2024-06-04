@@ -152,6 +152,7 @@ async function run() {
     //get all assets
     app.get('/assets',async(req,res)=>{
         
+        
         const result = await assetsCollection.find().toArray();
         res.send(result)
     })
@@ -210,8 +211,34 @@ async function run() {
         const email = req.params.email;
         const query = {email:email};
         const result = await assetsReqCollection.find(query).toArray();
+        res.send(result);
+    })
+
+    // data update by quantity
+
+    app.patch('/asset/:id', async(req,res)=>{
+        const id = req.params.id;
+        const query = {_id : new ObjectId(id)};
+        const assetData = req.body;
+        const updateDoc = {
+            $set:{
+                productQuantity:assetData.productQuantity-1
+            }
+        }
+        const result = await assetsCollection.updateOne(query,updateDoc);
+        res.send(result);
+    })
+
+    //all assets request get by hr
+
+
+    app.get('/hrReq/:email',async(req,res)=>{
+        const email = req.params.email;
+        const query = {'hrEmail':email};
+        const result = await assetsReqCollection.find(query).toArray();
         res.send(result)
     })
+
     
 
 
