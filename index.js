@@ -36,6 +36,7 @@ async function run() {
 
     const userCollection = client.db('assetsUsers').collection('users');
     const assetsCollection = client.db('assetsUsers').collection('assets');
+    const assetsReqCollection = client.db('assetsUsers').collection('assetsReq');
 
 
 
@@ -128,9 +129,11 @@ async function run() {
 
     
 
-
     
+    
+   
 
+   
 
 
 
@@ -143,6 +146,13 @@ async function run() {
     app.post('/assets',async(req,res)=>{
         const assetsData = req.body;
         const result = await assetsCollection.insertOne(assetsData);
+        res.send(result)
+    })
+
+    //get all assets
+    app.get('/assets',async(req,res)=>{
+        
+        const result = await assetsCollection.find().toArray();
         res.send(result)
     })
 
@@ -185,6 +195,23 @@ async function run() {
         res.send(result);
     })
 
+
+
+
+    // assets req api
+
+    app.post('/assetsReq',async(req,res)=>{
+        const assetsReqData = req.body;
+        const result = await assetsReqCollection.insertOne(assetsReqData);
+        res.send(result)
+    })
+
+    app.get('/assetsReq/:email',async(req,res)=>{
+        const email = req.params.email;
+        const query = {email:email};
+        const result = await assetsReqCollection.find(query).toArray();
+        res.send(result)
+    })
     
 
 
