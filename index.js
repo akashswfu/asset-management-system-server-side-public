@@ -2,6 +2,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+const jwt = require('jsonwebtoken')
 const port = process.env.PORT || 5000;
 const app = express();
 
@@ -34,9 +35,41 @@ async function run() {
     await client.connect();
 
 
+
+
     const userCollection = client.db('assetsUsers').collection('users');
     const assetsCollection = client.db('assetsUsers').collection('assets');
     const assetsReqCollection = client.db('assetsUsers').collection('assetsReq');
+
+
+    //jwt api verify
+
+    app.post('/jwt',async(req,res)=>{
+        const user = req.body;       
+        const token = jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{
+          expiresIn:'1h',
+        })
+        res.send({token})
+      })
+
+      const verifyToken = (req,res,next)=>{
+         console.log('inside', req.headers.authorization);
+        if(!req.headers.authorization){
+          return res.status(401).send({message:'forbidden access'});
+        }
+        const token = req.headers.authorization.split(' ')[1];
+        jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(err,decoded)=>{
+          if(err){
+            return res.status(401).send({message:'forbidden access'});
+          }
+          req.decoded=decoded;
+          next();
+        })
+      }
+
+
+
+
 
 
 
@@ -45,6 +78,7 @@ async function run() {
 
     app.post('/users',async(req,res)=>{
         const user = req.body;
+        
         const query = {email:user.email};
         const existingUser = await userCollection.findOne(query);
         if(existingUser){
@@ -56,13 +90,15 @@ async function run() {
     //get all the user
 
     app.get('/users',async(req,res)=>{
+        
         const result = await userCollection.find().toArray();
         res.send(result);
     })
 
     //get single user
 
-    app.get('/users/:hr',async(req,res)=>{
+    app.get('/users/:hr',verifyToken,async(req,res)=>{
+        
         const hr = req.params.hr;
         const query = {'myHr':hr};
         const result = await userCollection.find(query).toArray();
@@ -173,7 +209,7 @@ async function run() {
         res.send(result)
     })
 
-    //update single data
+    //update sinngle data
     app.put('/asset/:id', async(req,res)=>{
         const id = req.params.id;
         const query = {_id : new ObjectId(id)};
@@ -195,7 +231,6 @@ async function run() {
         const result = await assetsCollection.deleteOne(query);
         res.send(result);
     })
-
 
 
 
