@@ -5,6 +5,7 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken')
 const port = process.env.PORT || 5000;
 const app = express();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
 const corsOptions = {
     origin:['http://localhost:5173'],
@@ -47,13 +48,13 @@ async function run() {
     app.post('/jwt',async(req,res)=>{
         const user = req.body;       
         const token = jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{
-          expiresIn:'1h',
+          expiresIn:'10h',
         })
         res.send({token})
       })
 
       const verifyToken = (req,res,next)=>{
-         console.log('inside', req.headers.authorization);
+        //  console.log('inside', req.headers.authorization);
         if(!req.headers.authorization){
           return res.status(401).send({message:'forbidden access'});
         }
@@ -272,6 +273,57 @@ async function run() {
         const query = {'hrEmail':email};
         const result = await assetsReqCollection.find(query).toArray();
         res.send(result)
+    })
+
+
+
+    //payment intent
+
+    app.post('/create-payment-intent',async(req,res)=>{
+        const {packs} = req.body;
+        const amount = packs*100;
+        
+        // console.log(amount ,"Amount is ");
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount:amount,
+          currency:'usd',
+          payment_method_types:['card']
+        })
+        res.send({
+          clientSecret:paymentIntent.client_secret
+        })
+      })
+
+      //update user payment 
+
+    //   app.put('/user/:id', async(req,res)=>{
+    //     const id = req.params.id;
+    //     const query = {_id : new ObjectId(id)};
+    //     const userData = req.body;
+      
+    //     const updateDoc = {
+    //         $set:{
+    //             ...userData,
+    //         }
+    //     }
+    //     const result = await userCollection.updateOne(query,updateDoc,);
+    //     res.send(result);
+    // })
+
+
+    app.patch('/userHr/:id', async(req,res)=>{
+        const userData = req.body;
+        const id = req.params.id;
+        const query = {_id : new ObjectId(id)};       
+        
+        const updateDoc = {
+            $set:{
+               pack:userData.pack
+            }
+        }
+        console.log(updateDoc);
+        const result = await userCollection.updateOne(query,updateDoc);
+        res.send(result);
     })
 
     
