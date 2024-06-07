@@ -54,7 +54,8 @@ async function run() {
       })
 
       const verifyToken = (req,res,next)=>{
-        //  console.log('inside', req.headers.authorization);
+        
+        
         if(!req.headers.authorization){
           return res.status(401).send({message:'forbidden access'});
         }
@@ -250,7 +251,52 @@ async function run() {
         res.send(result);
     })
 
-    // data update by quantity
+    //cancel a request by user
+
+    app.delete('/assetsReq/:id',async(req,res)=>{
+        const id = req.params.id;
+    
+        
+        const query = {_id: new ObjectId(id)};
+        const result = await assetsReqCollection.deleteOne(query);
+        res.send(result);
+    })
+
+    //approved a request by HR
+    // app.patch('/assetsReq/:id', async(req,res)=>{
+    //     const id = req.params.id;
+    //     const query = {_id : new ObjectId(id)};
+    //     const assetData = req.body;
+    //     const updateDoc = {
+    //         $set:{
+    //             status:"Approved"
+    //         }
+    //     }
+        
+    //     const result = await assetsReqCollection.updateOne(query,updateDoc);
+    //     res.send(result);
+    // })
+
+    app.patch('/assetsReq/:id', async(req,res)=>{
+        const id = req.params.id;
+        const query = {_id : new ObjectId(id)};
+        const assetsReqData = req.body;
+        // const options = {upsert:true};
+       
+        
+        const updateDoc = {
+            $set:{
+                status:assetsReqData.status
+            }
+        }
+       
+        const result = await assetsReqCollection.updateOne(query,updateDoc);
+        res.send(result);
+    })
+    
+
+
+    // assets quantity decrease by 1
 
     app.patch('/asset/:id', async(req,res)=>{
         const id = req.params.id;
@@ -264,6 +310,29 @@ async function run() {
         const result = await assetsCollection.updateOne(query,updateDoc);
         res.send(result);
     })
+
+
+    // assets quantity increase by 1
+
+    app.patch('/assets/:id', async(req,res)=>{
+        const id = req.params.id;
+        console.log(id);
+        const query = {_id : new ObjectId(id)};
+        const assetData = req.body;
+        const updateDoc = {
+            $set:{
+                productQuantity:assetData.productQuantity+1
+            }
+        }
+        console.log(updateDoc);
+        const result = await assetsCollection.updateOne(query,updateDoc);
+        res.send(result);
+    })
+
+
+
+
+
 
     //all assets request get by hr
 
@@ -283,7 +352,8 @@ async function run() {
         const {packs} = req.body;
         const amount = packs*100;
         
-        // console.log(amount ,"Amount is ");
+  
+        
         const paymentIntent = await stripe.paymentIntents.create({
           amount:amount,
           currency:'usd',
@@ -321,7 +391,7 @@ async function run() {
                pack:userData.pack
             }
         }
-        console.log(updateDoc);
+      
         const result = await userCollection.updateOne(query,updateDoc);
         res.send(result);
     })
