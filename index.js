@@ -396,6 +396,58 @@ async function run() {
         res.send(result);
     })
 
+
+
+    // Home for employ
+
+    // pending status data get by employ
+
+    app.get('/pendingReq',async(req,res)=>{
+        const {email,status}=req.query;   
+        const result = await assetsReqCollection.find({ email: email, status: status }).toArray();            
+        res.send(result);
+    })
+
+    //get req data for this month
+    app.get('/thisMonthReq/:email',async(req,res)=>{
+        const email = req.params.email; 
+        console.log(email);
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(),1);
+        const formattedStartOfMonth = startOfMonth.toISOString();
+        console.log(formattedStartOfMonth);
+        const result = await assetsReqCollection.find({ email: email,   requestData: { $gte: (formattedStartOfMonth) } }).sort({ requestData: -1 }).toArray(); 
+     
+        res.send(result);
+    })
+
+
+    //Home for Hr
+
+    app.get('/pendingReqByHr',async(req,res)=>{
+        const {email,status}=req.query;   
+
+        const result = await assetsReqCollection.find({ hrEmail: email, status: status }).toArray();  
+                
+        res.send(result);
+    })
+
+
+    const data = [
+        { productName: "Product 1", requests: 1 },
+        { productName: "Product 1", requests: 1 },
+        { productName: "Product 3", requests: 1 },
+        { productName: "Product 3", requests: 1 },
+        { productName: "Product 3", requests: 1 },
+        { productName: "Product 1", requests: 1 },
+        { productName: "Product 4", requests: 1 },
+        // More objects...
+    ];
+  
+    
+
+
+
     
 
 
