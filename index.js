@@ -198,10 +198,62 @@ async function run() {
     //get all data by hr email
     app.get('/assets/:email',async(req,res)=>{
         const email = req.params.email;
-        const query = {'hrEmail':email};
+        const assetsStock = req.query.assetsStock;
+        const assetsType = req.query.assetsType;
+        const search = req.query.search;
+
+        const query = {
+            'hrEmail':email,
+            
+        }
+        if(search){
+            query.productName= { $regex: search, $options: 'i' }
+        }
+        if(assetsType){
+            query.type = assetsType
+        }
+        if(assetsStock){
+            if(assetsStock==='in'){
+                query.productQuantity = {$gt:0};
+            }
+            else{
+                query.productQuantity = {$eq:0}
+            }
+        }
+        // const query = {'hrEmail':email};
         const result = await assetsCollection.find(query).toArray();
         res.send(result)
     })
+    // app.get('/assetsReq/:email',async(req,res)=>{
+    //     const email = req.params.email;
+    //     const search = req.query.search;
+    //     const sort = req.query.sort;
+    //     const assetsType = req.query.assetsType;
+        
+    //     const query = { email, productName: { $regex: search, $options: 'i' } };
+    //     if (sort) {
+    //         query.status = sort;
+    //     }
+    //     if(assetsType){
+    //         query.type = assetsType
+    //     }
+        
+    //     const result = await assetsReqCollection.find(query).toArray();
+    //     res.send(result);
+    // })
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     //get single data
     app.get('/asset/:id',async(req,res)=>{
@@ -244,19 +296,33 @@ async function run() {
         res.send(result)
     })
 
+
+
     app.get('/assetsReq/:email',async(req,res)=>{
         const email = req.params.email;
-        const query = {email:email};
+        const search = req.query.search;
+        const sort = req.query.sort;
+        const assetsType = req.query.assetsType;
+        
+        const query = { email, productName: { $regex: search, $options: 'i' } };
+        if (sort) {
+            query.status = sort;
+        }
+        if(assetsType){
+            query.type = assetsType
+        }
+        
         const result = await assetsReqCollection.find(query).toArray();
         res.send(result);
     })
 
+
+
+
     //cancel a request by user
 
     app.delete('/assetsReq/:id',async(req,res)=>{
-        const id = req.params.id;
-    
-        
+        const id = req.params.id;   
         const query = {_id: new ObjectId(id)};
         const result = await assetsReqCollection.deleteOne(query);
         res.send(result);
@@ -316,7 +382,7 @@ async function run() {
 
     app.patch('/assets/:id', async(req,res)=>{
         const id = req.params.id;
-        console.log(id);
+      
         const query = {_id : new ObjectId(id)};
         const assetData = req.body;
         const updateDoc = {
@@ -324,7 +390,7 @@ async function run() {
                 productQuantity:assetData.productQuantity+1
             }
         }
-        console.log(updateDoc);
+        
         const result = await assetsCollection.updateOne(query,updateDoc);
         res.send(result);
     })
@@ -411,11 +477,11 @@ async function run() {
     //get req data for this month
     app.get('/thisMonthReq/:email',async(req,res)=>{
         const email = req.params.email; 
-        console.log(email);
+       
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(),1);
         const formattedStartOfMonth = startOfMonth.toISOString();
-        console.log(formattedStartOfMonth);
+       
         const result = await assetsReqCollection.find({ email: email,   requestData: { $gte: (formattedStartOfMonth) } }).sort({ requestData: -1 }).toArray(); 
      
         res.send(result);
@@ -432,17 +498,12 @@ async function run() {
         res.send(result);
     })
 
+    // all req by user for hr
 
-    const data = [
-        { productName: "Product 1", requests: 1 },
-        { productName: "Product 1", requests: 1 },
-        { productName: "Product 3", requests: 1 },
-        { productName: "Product 3", requests: 1 },
-        { productName: "Product 3", requests: 1 },
-        { productName: "Product 1", requests: 1 },
-        { productName: "Product 4", requests: 1 },
-        // More objects...
-    ];
+
+
+
+   
   
     
 
