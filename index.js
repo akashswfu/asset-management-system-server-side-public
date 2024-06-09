@@ -127,11 +127,31 @@ async function run() {
     //Check hr team list
 
     app.get('/users/:email',async(req,res)=>{
+        const size = parseInt(req.query.size);
+        const page = parseInt(req.query.page)-1;
         const email = req.params.email;
+        
+        
         const query = {'myHr':email};
-        const result = await assetsCollection.find(query).toArray();
+        const result = await userCollection.find(query).skip(page*size).limit(size).toArray();
         res.send(result)
     })
+
+
+    // get my employ for hr 
+
+    // app.get('/myTeam/:email',async(req,res)=>{
+    //     const email = req.params.email;
+    //     const query = {'myHr':email};     
+    //     const count = await userCollection.countDocuments(query);
+    //     res.send({count});
+    //   })
+
+
+
+    
+
+
 
     //remove from hr team
 
@@ -202,6 +222,9 @@ async function run() {
         const assetsType = req.query.assetsType;
         const search = req.query.search;
         const sort = req.query.sort;
+        const size = parseInt(req.query.size);
+        const page = parseInt(req.query.page)-1;
+        
 
         const query = {
             'hrEmail':email,
@@ -222,22 +245,10 @@ async function run() {
             }
         }
        
-        const result = await assetsCollection.find(query).sort({productQuantity: sort==='dsc' ? -1 : 1}).toArray();
+        const result = await assetsCollection.find(query).sort({productQuantity: sort==='dsc' ? -1 : 1}).skip(page*size).limit(size).toArray();
         res.send(result)
     })
     
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     //get single data
@@ -288,6 +299,9 @@ async function run() {
         const search = req.query.search;
         const sort = req.query.sort;
         const assetsType = req.query.assetsType;
+        const size = parseInt(req.query.size);
+        const page = parseInt(req.query.page)-1;
+        
         
         const query = { email, productName: { $regex: search, $options: 'i' } };
         if (sort) {
@@ -297,9 +311,25 @@ async function run() {
             query.type = assetsType
         }
         
-        const result = await assetsReqCollection.find(query).toArray();
+        const result = await assetsReqCollection.find(query).skip(page*size).limit(size).toArray();
         res.send(result);
     })
+
+    //my total assetsReq
+
+    app.get('/myAssetsReq/:email',async(req,res)=>{
+        const search = req.query.search;
+        const email = req.params.email;
+        const query = {email:email}
+        if(search){
+            query.name= { $regex: search, $options: 'i' }
+        }
+      
+        const count = await assetsReqCollection.countDocuments(query);
+        console.log(count);
+        res.send({count});
+       
+      })
 
 
 
@@ -413,6 +443,25 @@ async function run() {
         res.send({count});
        
       })
+
+      //assets count by hr
+
+      app.get('/assetsCount/:email',async(req,res)=>{
+        const search = req.query.search;
+        const email = req.params.email;
+        const query = {'hrEmail':email};
+        if(search){
+            query.name= { $regex: search, $options: 'i' }
+        }
+      
+        const count = await assetsCollection.countDocuments(query);
+      
+
+        res.send({count});
+       
+      })
+
+      
 
 
 
