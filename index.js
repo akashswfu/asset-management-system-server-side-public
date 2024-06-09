@@ -201,6 +201,7 @@ async function run() {
         const assetsStock = req.query.assetsStock;
         const assetsType = req.query.assetsType;
         const search = req.query.search;
+        const sort = req.query.sort;
 
         const query = {
             'hrEmail':email,
@@ -220,27 +221,11 @@ async function run() {
                 query.productQuantity = {$eq:0}
             }
         }
-        // const query = {'hrEmail':email};
-        const result = await assetsCollection.find(query).toArray();
+       
+        const result = await assetsCollection.find(query).sort({productQuantity: sort==='dsc' ? -1 : 1}).toArray();
         res.send(result)
     })
-    // app.get('/assetsReq/:email',async(req,res)=>{
-    //     const email = req.params.email;
-    //     const search = req.query.search;
-    //     const sort = req.query.sort;
-    //     const assetsType = req.query.assetsType;
-        
-    //     const query = { email, productName: { $regex: search, $options: 'i' } };
-    //     if (sort) {
-    //         query.status = sort;
-    //     }
-    //     if(assetsType){
-    //         query.type = assetsType
-    //     }
-        
-    //     const result = await assetsReqCollection.find(query).toArray();
-    //     res.send(result);
-    // })
+    
 
 
 
@@ -405,7 +390,11 @@ async function run() {
 
     app.get('/hrReq/:email',async(req,res)=>{
         const email = req.params.email;
+        const search = req.query.search;
         const query = {'hrEmail':email};
+        if(search){
+            query.name= { $regex: search, $options: 'i' }
+        }
         const result = await assetsReqCollection.find(query).toArray();
         res.send(result)
     })
