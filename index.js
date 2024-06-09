@@ -380,24 +380,42 @@ async function run() {
         res.send(result);
     })
 
-
-
-
-
-
     //all assets request get by hr
 
 
+    // pagination added here all reqest for hr 
+
+
     app.get('/hrReq/:email',async(req,res)=>{
+        const size = parseInt(req.query.size);
+        const page = parseInt(req.query.page)-1;
         const email = req.params.email;
         const search = req.query.search;
         const query = {'hrEmail':email};
         if(search){
             query.name= { $regex: search, $options: 'i' }
         }
-        const result = await assetsReqCollection.find(query).toArray();
+        const result = await assetsReqCollection.find(query).skip(page*size).limit(size).toArray();
         res.send(result)
     })
+
+    // hr assets req count by user
+
+    app.get('/hrReqs/:email',async(req,res)=>{
+        const search = req.query.search;
+        const email = req.params.email;
+        const query = {'hrEmail':email};
+        if(search){
+            query.name= { $regex: search, $options: 'i' }
+        }
+      
+        const count = await assetsReqCollection.countDocuments(query);
+        res.send({count});
+       
+      })
+
+
+
 
 
 
