@@ -137,21 +137,22 @@ async function run() {
         res.send(result)
     })
 
+    //update single user name 
 
-    // get my employ for hr 
-
-    // app.get('/myTeam/:email',async(req,res)=>{
-    //     const email = req.params.email;
-    //     const query = {'myHr':email};     
-    //     const count = await userCollection.countDocuments(query);
-    //     res.send({count});
-    //   })
-
-
-
-    
-
-
+    app.patch('/userName/:email', async(req,res)=>{
+        const email = req.params.email;
+        const query = {email:email};
+        const userData = req.body;
+        console.log(email,userData);
+        // const options = {upsert:true};
+        const updateDoc = {
+            $set:{
+                name:userData.name
+            }
+        }
+        const result = await userCollection.updateOne(query,updateDoc);
+        res.send(result);
+    })
 
     //remove from hr team
 
@@ -217,6 +218,7 @@ async function run() {
 
     //get all data by hr email
     app.get('/assets/:email',async(req,res)=>{
+
         const email = req.params.email;
         const assetsStock = req.query.assetsStock;
         const assetsType = req.query.assetsType;
@@ -224,11 +226,11 @@ async function run() {
         const sort = req.query.sort;
         const size = parseInt(req.query.size);
         const page = parseInt(req.query.page)-1;
-        
 
+        console.log(email);
+        
         const query = {
-            'hrEmail':email,
-            
+            'hrEmail':email,    
         }
         if(search){
             query.productName= { $regex: search, $options: 'i' }
@@ -243,8 +245,7 @@ async function run() {
             else{
                 query.productQuantity = {$eq:0}
             }
-        }
-       
+        }      
         const result = await assetsCollection.find(query).sort({productQuantity: sort==='dsc' ? -1 : 1}).skip(page*size).limit(size).toArray();
         res.send(result)
     })
@@ -375,6 +376,8 @@ async function run() {
         res.send(result);
     })
     
+
+
 
 
     // assets quantity decrease by 1
